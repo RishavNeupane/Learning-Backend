@@ -1,0 +1,58 @@
+const User = require("../model/userModel")
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const register = async (req, res) => {
+    // Destructuring form/json data
+    const { firstName, lastName, email, password } = req.body;
+    try {
+
+        if (!firstName || !lastName || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "All Fields Are Required"
+            });
+        }
+
+        const existingUser = await User.findOne({ email: email });
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                message: "User Already Exist.."
+            });
+        }
+        
+        const hashPassword = await bcrypt.hash(password,10)
+
+        const newUser = new User({
+            firstName, lastName, email, password:hashPassword
+        })
+
+        await newUser.save();
+
+        const token = jwt.sign({
+            id: newUser._id,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            email: newUser.email,
+            isAdmin: newUser.isAdmin,
+        },process.env.JWT_SECRET,{expiresIn:"1d"})
+
+        return res.status(400).json({
+            success: true,
+            message: "User  Registered Successfully",
+            token,
+            newUser
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: `Error While Registering is ${error}`,
+
+        });
+    }
+}
+module.exports = {
+    register
+}

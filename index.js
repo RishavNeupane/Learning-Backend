@@ -5,7 +5,10 @@ const connectToDatabase = require("./db/db");
 const dotenv = require("dotenv");
 dotenv.config();
 const app = express();
+app.use(express.json());
 connectToDatabase();
+
+app.use('/api/auth',require("./routes/userRoutes"));
 
 const port = process.env.PORT
 
@@ -14,8 +17,5 @@ app.listen(port, () => {
 });
 
 app.get("/", (req,res)=>{
-    res.send("XDDDD")
-
-
-
+    res.send("Hello World")
 });
